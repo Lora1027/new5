@@ -1,3 +1,4 @@
+import { fmt } from '../lib/money'
 import { useEffect, useState } from 'react'
 import AuthGate from '../components/AuthGate'
 import Nav from '../components/Nav'
@@ -83,7 +84,7 @@ export default function Inventory(){
             <thead><tr><th>SKU</th><th>Name</th><th>Unit Cost</th><th>Qty</th><th>Value</th><th>Added</th></tr></thead>
             <tbody>
               {items.map(x => (
-                <tr key={x.id}><td>{x.sku}</td><td>{x.name}</td><td>{x.unit_cost.toFixed(2)}</td><td>{x.qty_on_hand}</td><td>{(x.unit_cost*x.qty_on_hand).toFixed(2)}</td><td>{new Date(x.created_at).toLocaleDateString()}</td></tr>
+                <tr key={x.id}><td>{x.sku}</td><td>{x.name}</td><td>{fmt(x.unit_cost)}</td><td>{x.qty_on_hand}</td><td>{fmt(x.unit_cost * x.qty_on_hand)}</td><td>{new Date(x.created_at).toLocaleDateString()}</td></tr>
               ))}
             </tbody>
           </table>
