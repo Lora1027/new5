@@ -25,20 +25,22 @@ export default function Dashboard(){
 
   async function load(){
    // addTx
-async function addTx(e: any) {
-  e.preventDefault();
-  const form = new FormData(e.target as HTMLFormElement);
+async function load() {
+  const me = await supabase.auth.getUser();
+  setEmail(me.data.user?.email ?? null);
 
-  const payload = {
-    date: form.get('date') as string,
-    type: form.get('type') as 'income' | 'expense',
-    category: (form.get('category') as string) || null,
-    method: form.get('method') as 'cash' | 'gcash' | 'bank',
-    amount: Number(form.get('amount')),
-    notes: (form.get('notes') as string) || null,
-  };
+  let query = supabase.from('transactions').select('*').order('date', { ascending: false });
+  if (filters.type !== 'all') query = query.eq('type', filters.type);
+  if (filters.method !== 'all') query = query.eq('method', filters.method);
+  if (filters.q) query = query.ilike('notes', `%${filters.q}%`);
+  if (filters.from) query = query.gte('date', filters.from);
+  if (filters.to) query = query.lte('date', filters.to);
+  const { data: t } = await query;
+  setTx((t as any) || []);
 
-
+  const { data: b } = await supabase.from('balances').select('*').order('updated_at', { ascending: false });
+  setBalances((b as any) || []);
+}
   useEffect(() => { load() }, [filters.type, filters.method, filters.q, filters.from, filters.to])
 
   const totals = useMemo(() => {
