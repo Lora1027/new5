@@ -21,13 +21,17 @@ export default function Inventory(){
 
   async function addSingle(e:any){
     e.preventDefault()
-   const { error } = await supabase.from('inventory').insert({
+ // addSingle
+const { error } = await supabase.from('inventory').insert({
   sku: f.get('sku'),
   name: f.get('name'),
   unit_cost: Number(f.get('unit_cost')),
   qty_on_hand: Number(f.get('qty_on_hand'))
 } as any);
 if (error) { alert('Save failed: ' + error.message); return; }
+(e.target as HTMLFormElement).reset();
+load();
+
 
 
   function parseCSV(text:string){
@@ -40,8 +44,11 @@ if (error) { alert('Save failed: ' + error.message); return; }
   }
 
   async function bulkUpload(e:any){
-   const { error } = await supabase.from('inventory').insert(records as any[]);
-if (error) throw error;
+  // bulkUpload
+const { error } = await supabase.from('inventory').insert(records as any[]);
+if (error) { alert('Bulk upload failed: ' + error.message); return; }
+setMsg(`Uploaded ${records.length} items.`);
+load();
       const records = parseCSV(text).slice(0, 1000) // limit to 1000 rows per upload
       const { error } = await supabase.from('inventory').insert(records)
       if(error) throw error
