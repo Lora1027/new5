@@ -24,21 +24,18 @@ export default function Dashboard(){
   const [filters, setFilters] = useState({ type:'all', method:'all', q:'', from:'', to:'' })
 
   async function load(){
-    const me = await supabase.auth.getUser()
-    setEmail(me.data.user?.email ?? null)
+   // addTx
+const { error: txErr } = await supabase.from('transactions').insert(payload as any);
+if (txErr) { alert('Save failed: ' + txErr.message); return; }
 
-    let query = supabase.from('transactions').select('*').order('date', { ascending: false })
-    if(filters.type!=='all') query = query.eq('type', filters.type)
-    if(filters.method!=='all') query = query.eq('method', filters.method)
-    if(filters.q) query = query.ilike('notes', `%${filters.q}%`)
-    if(filters.from) query = query.gte('date', filters.from)
-    if(filters.to) query = query.lte('date', filters.to)
-    const { data: t } = await query
-    setTx(t as Tx[] || [])
+// addBalance
+const { error: balErr } = await supabase.from('balances').insert({
+  label: f.get('label'),
+  kind: f.get('kind'),
+  balance: Number(f.get('balance'))
+} as any);
+if (balErr) { alert('Save failed: ' + balErr.message); return; }
 
-    const { data: b } = await supabase.from('balances').select('*').order('updated_at', { ascending:false })
-    setBalances(b as Balance[] || [])
-  }
 
   useEffect(() => { load() }, [filters.type, filters.method, filters.q, filters.from, filters.to])
 
