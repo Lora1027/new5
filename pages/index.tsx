@@ -25,16 +25,18 @@ export default function Dashboard(){
 
   async function load(){
    // addTx
-const { error: txErr } = await supabase.from('transactions').insert(payload as any);
-if (txErr) { alert('Save failed: ' + txErr.message); return; }
+async function addTx(e: any) {
+  e.preventDefault();
+  const form = new FormData(e.target as HTMLFormElement);
 
-// addBalance
-const { error: balErr } = await supabase.from('balances').insert({
-  label: f.get('label'),
-  kind: f.get('kind'),
-  balance: Number(f.get('balance'))
-} as any);
-if (balErr) { alert('Save failed: ' + balErr.message); return; }
+  const payload = {
+    date: form.get('date') as string,
+    type: form.get('type') as 'income' | 'expense',
+    category: (form.get('category') as string) || null,
+    method: form.get('method') as 'cash' | 'gcash' | 'bank',
+    amount: Number(form.get('amount')),
+    notes: (form.get('notes') as string) || null,
+  };
 
 
   useEffect(() => { load() }, [filters.type, filters.method, filters.q, filters.from, filters.to])
@@ -70,15 +72,41 @@ if (balErr) { alert('Save failed: ' + balErr.message); return; }
 
   async function addBalance(e:any){
     e.preventDefault()
-    const f = new FormData(e.target)
-    await supabase.from('balances').insert({
-      label: f.get('label'),
-      kind: f.get('kind'),
-      balance: Number(f.get('balance'))
-    })
-    ;(e.target as HTMLFormElement).reset()
-    load()
+  const { error: txErr } = await supabase
+    .from('transactions')
+    .insert(payload as any);
+
+  if (txErr) {
+    alert('Save failed: ' + txErr.message);
+    return;
   }
+
+  (e.target as HTMLFormElement).reset();
+  load();
+}
+
+async function addBalance(e: any) {
+  e.preventDefault();
+  const f = new FormData(e.target as HTMLFormElement);
+
+  const record = {
+    label: f.get('label') as string,
+    kind: f.get('kind') as 'cash' | 'bank',
+    balance: Number(f.get('balance')),
+  };
+
+  const { error: balErr } = await supabase
+    .from('balances')
+    .insert(record as any);
+
+  if (balErr) {
+    alert('Save failed: ' + balErr.message);
+    return;
+  }
+
+  (e.target as HTMLFormElement).reset();
+  load();
+}
 
   return (
     <AuthGate>
